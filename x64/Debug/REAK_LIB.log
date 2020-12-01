@@ -1,0 +1,6 @@
+﻿  REAK_LIB.cpp
+D:\Program Files (x86)\project\REAK_LIB\REAK_LIB.cpp(13,45): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+D:\Program Files (x86)\project\REAK_LIB\REAK_LIB.cpp(18,21): warning C4305: инициализация: усечение из "double" в "float"
+D:\Program Files (x86)\project\REAK_LIB\REAK_LIB.cpp(25,19): warning C4101: t2: неиспользованная локальная переменная
+D:\Program Files (x86)\project\REAK_LIB\REAK_LIB.cpp(24,19): warning C4101: t1: неиспользованная локальная переменная
+  REAK_LIB.vcxproj -> D:\Program Files (x86)\project\REAK_LIB\x64\Debug\REAK_LIB.exe

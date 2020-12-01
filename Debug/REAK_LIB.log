@@ -1,0 +1,19 @@
+﻿  libgate.cpp
+D:\Program Files (x86)\project\REAK_LIB\libgate.h(23,28): error C2086: std::vector<InfoChannels,std::allocator<InfoChannels>> GateDTS::VectChannels: переопределение
+D:\Program Files (x86)\project\REAK_LIB\libgate.h(21): message : см. объявление "GateDTS::VectChannels"
+D:\Program Files (x86)\project\REAK_LIB\libgate.h(55,55): error C2535: unsigned int GateDTS::WriteAnalogData(void *,int): функция-член уже определена или объявлена
+D:\Program Files (x86)\project\REAK_LIB\libgate.h(53): message : см. объявление "GateDTS::WriteAnalogData"
+D:\Program Files (x86)\project\REAK_LIB\libgate.cpp(27,1): error C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(208): message : см. объявление "fopen"
+D:\Program Files (x86)\project\REAK_LIB\libgate.cpp(40,1): error C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1197): message : см. объявление "fscanf"
+D:\Program Files (x86)\project\REAK_LIB\libgate.cpp(137,1): error C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(208): message : см. объявление "fopen"
+D:\Program Files (x86)\project\REAK_LIB\libgate.cpp(150,1): error C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1197): message : см. объявление "fscanf"
+  REAK_LIB.cpp
+D:\Program Files (x86)\project\REAK_LIB\libgate.h(23,28): error C2086: std::vector<InfoChannels,std::allocator<InfoChannels>> GateDTS::VectChannels: переопределение
+D:\Program Files (x86)\project\REAK_LIB\libgate.h(21): message : см. объявление "GateDTS::VectChannels"
+D:\Program Files (x86)\project\REAK_LIB\libgate.h(55,55): error C2535: unsigned int GateDTS::WriteAnalogData(void *,int): функция-член уже определена или объявлена
+D:\Program Files (x86)\project\REAK_LIB\libgate.h(53): message : см. объявление "GateDTS::WriteAnalogData"
+  Создание кода...
