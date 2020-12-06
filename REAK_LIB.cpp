@@ -33,7 +33,17 @@ int main(int num, char* arg[])
 
     int status = 0;
     unsigned int res = 0;
-    GateDTS* dts_gate = new GateDTS();
+    int error_init = 0;
+    int error_system = 0;
+    Gate_EMT_DTS* dts_gate = new Gate_EMT_DTS();
+    if (dts_gate->GetStatusInit() != Status_Init::OK)
+    {
+        std::cout << "ERROR INITIAL GATE" << std::endl;
+        std::cout << "error - "<< dts_gate->GerLastError() << std::endl;
+        std::cout << "error_system - " << dts_gate->GetLastSystemError() << std::endl;
+        Sleep(2000);
+        return -1;
+    }
 
     float* bufA = new float[num_channels*size_data];
     for (int i = 0; i < num_channels * size_data; i++) bufA[i] = i;
@@ -53,9 +63,6 @@ int main(int num, char* arg[])
     LARGE_INTEGER f;
     float time = 0;
     QueryPerformanceFrequency(&f);
-
-    dts_gate->ReadListKKSIn();
-    dts_gate->ReadListKKSOut();
 
     Sleep(4000);
     

@@ -1,5 +1,9 @@
 #include "libgate.h"
 
+#define numerror_InitSecurityAttrubuts 5
+#define numerror_ReadListKKSIn 4
+#define numerror_ReadListKKSOut 4
+
 std::string CreateNameMutexMemory(TypeData TD, TypeValue TV, int channel)
 {
     std::string str;
@@ -136,20 +140,48 @@ SECURITY_ATTRIBUTES& SecurityHandle::getsecurityattrebut()
     return sa;
 }
 
-GateDTS::GateDTS()
+Gate_EMT_DTS::Gate_EMT_DTS()
 {
+    int result = 0;
+
     security = new SecurityHandle();
-    security->InitSecurityAttrubuts();
+    result = security->InitSecurityAttrubuts();
+    if (result != 0)
+    {
+        result_init = result;
+        last_system_error = security->getlasterror();
+        return;
+    }
+
+    result = ReadListKKSOut();
+    if (result != 0)
+    {
+        result_init = (result << numerror_InitSecurityAttrubuts);
+        //last_system_error = 0;
+        return;
+    }
+
+    result = ReadListKKSIn();
+    if (result != 0)
+    {
+        result_init = (result << (numerror_InitSecurityAttrubuts+numerror_ReadListKKSOut));
+        //last_system_error = 0;
+        return;
+    }
+
+    status_init = Status_Init::OK;
+
+    return;
 }
 
-/// --- функция чтения списка KKSOut --- /// 
+/// --- функция чтения списка KKSIn --- /// 
 /*
 0 - ошибка открытия файла
 1 - ошибка в формате данных KKS
 2 - ошибка типа данных KKS
 3 - повтрный индекс KKS
 */
-unsigned int GateDTS::ReadListKKSIn()
+unsigned int Gate_EMT_DTS::ReadListKKSIn()
 {
     FILE* config_file = NULL;
     char simvol = 0;
@@ -252,14 +284,14 @@ unsigned int GateDTS::ReadListKKSIn()
 }
 
 
-/// --- функция чтения списка KKSIn --- ///
+/// --- функция чтения списка KKSOut --- ///
 /*
 0 - ошибка открытия файла
 1 - ошибка в формате данных KKS
 2 - ошибка типа данных KKS
 3 - повтрный индекс KKS
 */
-unsigned int GateDTS::ReadListKKSOut()
+unsigned int Gate_EMT_DTS::ReadListKKSOut()
 {
     FILE* config_file = NULL;
     char simvol = 0;
@@ -369,7 +401,7 @@ unsigned int GateDTS::ReadListKKSOut()
 -3 - ошибка отображения памяти
 >0 - код команды
 */
-int GateDTS::GetStatusMemory()
+int Gate_EMT_DTS::GetStatusMemory()
 {
     unsigned char status;
 
@@ -379,6 +411,7 @@ int GateDTS::GetStatusMemory()
         MutexSharMemStatus = CreateMutexA(NULL, FALSE, NameMutStatusMemoryGate);
         if (MutexSharMemStatus == NULL)
         {
+            last_system_error = GetLastError();
             result = -1;
             return result;
         }
@@ -389,6 +422,7 @@ int GateDTS::GetStatusMemory()
         SharMemStatus = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, NameStatusMemoryGate);
         if (SharMemStatus == NULL)
         {
+            last_system_error = GetLastError();
             result = -2;
             return result;
         }
@@ -399,6 +433,7 @@ int GateDTS::GetStatusMemory()
         buf_status = (char*)MapViewOfFile(SharMemStatus, FILE_MAP_ALL_ACCESS, 0, 0, SizeMapStatus);
         if (buf_status == NULL)
         {
+            last_system_error = GetLastError();
             result = -3;
             return result;
         }
@@ -448,7 +483,7 @@ int GateDTS::GetStatusMemory()
 
 */
 
-unsigned int GateDTS::UpdateListChannels()
+unsigned int Gate_EMT_DTS::UpdateListChannels()
 {
     HANDLE memory;
     InfoChannels* buf;
@@ -458,6 +493,7 @@ unsigned int GateDTS::UpdateListChannels()
         MutexMemoryInfoChannels = CreateMutexA(&security->getsecurityattrebut(), FALSE, NameMutMemoryInfoChannels);
         if (MutexMemoryInfoChannels == NULL)
         {
+            last_system_error = GetLastError();
             result |= 1;
             return result;
         }
@@ -466,6 +502,7 @@ unsigned int GateDTS::UpdateListChannels()
     memory = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, NameMemoryInfoChannels);
     if (memory == NULL)
     {
+        last_system_error = GetLastError();
         result |= 2;
         return result;
     }
@@ -473,6 +510,7 @@ unsigned int GateDTS::UpdateListChannels()
     buf = (InfoChannels*)MapViewOfFile(memory,FILE_MAP_ALL_ACCESS,0,0, sizeof(InfoChannels)*num_channels);
     if (buf == NULL)
     {
+        last_system_error = GetLastError();
         CloseHandle(memory);
         result |= 4;
         return result;
@@ -500,7 +538,7 @@ unsigned int GateDTS::UpdateListChannels()
 1 - ошибка открытия памяти
 2 - ошибка отображения памяти
 */
-unsigned int GateDTS::UpdateListKKSInMem()
+unsigned int Gate_EMT_DTS::UpdateListKKSInMem()
 {
     int result = 0;
     HANDLE memory;
@@ -511,6 +549,7 @@ unsigned int GateDTS::UpdateListKKSInMem()
         MutexUpdateListKKSInMem = CreateMutexA(&security->getsecurityattrebut(), FALSE, NameMutKKSInPut);
         if (MutexUpdateListKKSInMem == NULL)
         {
+            last_system_error = GetLastError();
             result |= 1;
             return result;
         }
@@ -519,6 +558,7 @@ unsigned int GateDTS::UpdateListKKSInMem()
     memory = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, NameMemoryKKSInPut);
     if (memory == NULL)
     {
+        last_system_error = GetLastError();
         result |= 2;
         return result;
     }
@@ -526,6 +566,7 @@ unsigned int GateDTS::UpdateListKKSInMem()
     buf = (KKSDTS*)MapViewOfFile(memory, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(KKSDTS) * num_KKSIn);
     if (buf == NULL)
     {
+        last_system_error = GetLastError();
         CloseHandle(memory);
         result |= 4;
         return result;
@@ -554,7 +595,7 @@ unsigned int GateDTS::UpdateListKKSInMem()
 1 - ошибка открытия памяти
 2 - ошибка отображения памяти
 */
-unsigned int GateDTS::UpdateListKKSOutMem()
+unsigned int Gate_EMT_DTS::UpdateListKKSOutMem()
 {
     int result = 0;
     HANDLE memory;
@@ -565,6 +606,7 @@ unsigned int GateDTS::UpdateListKKSOutMem()
         MutexUpdateListKKSOutMem = CreateMutexA(&security->getsecurityattrebut(), FALSE, NameMutKKSOutPut);
         if (MutexUpdateListKKSOutMem == NULL)
         {
+            last_system_error = GetLastError();
             result |= 1;
             return result;
         }
@@ -573,6 +615,7 @@ unsigned int GateDTS::UpdateListKKSOutMem()
     memory = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, NameMemoryKKSOutPut);
     if (memory == NULL)
     {
+        last_system_error = GetLastError();
         result |= 2;
         return result;
     }
@@ -580,6 +623,7 @@ unsigned int GateDTS::UpdateListKKSOutMem()
     buf = (KKSDTS*)MapViewOfFile(memory, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(KKSDTS) * num_KKSOut);
     if (buf == NULL)
     {
+        last_system_error = GetLastError();
         CloseHandle(memory);
         result |= 4;
         return result;
@@ -602,14 +646,14 @@ unsigned int GateDTS::UpdateListKKSOutMem()
 }
 
 
-/// --- обновдения таблицы соотношения данных REAK DTS --- /// тут бы оптимизировать процесс
+/// --- обновдения таблицы соотношения данных EMT DTS --- /// тут бы оптимизировать процесс
 /*
-0 - вектор KKS IN REAK пуст
+0 - вектор KKS IN EMT пуст
 1 - вектор KKS IN DTS пуст
 
 */
 
-unsigned int GateDTS::UpdateTabConcordKKSIn()
+unsigned int Gate_EMT_DTS::UpdateTabConcordKKSIn()
 {
     unsigned int  result = 0;
     unsigned int count = 0;
@@ -678,12 +722,12 @@ unsigned int GateDTS::UpdateTabConcordKKSIn()
 
 /// --- обновдения таблицы соотношения данных REAK DTS --- /// тут бы оптимизировать процесс
 /*
-0 - вектор KKS OUT REAK пуст
+0 - вектор KKS OUT EMT пуст
 1 - вектор KKS OUT DTS пуст
 
 */
 
-unsigned int GateDTS::UpdateTabConcordKKSOut()
+unsigned int Gate_EMT_DTS::UpdateTabConcordKKSOut()
 {
     unsigned int  result = 0;
     unsigned int count = 0;
@@ -759,7 +803,7 @@ unsigned int GateDTS::UpdateTabConcordKKSOut()
  3 - ошибка отображения памяти
 
 */
-unsigned int GateDTS::UpdateMemoryTabConcordIn()
+unsigned int Gate_EMT_DTS::UpdateMemoryTabConcordIn()
 {
     unsigned int result = 0;
     int* number;
@@ -776,6 +820,7 @@ unsigned int GateDTS::UpdateMemoryTabConcordIn()
         MutexConcordKKSIn = CreateMutexA(&security->getsecurityattrebut(), FALSE, NameMutexConcordKKSIn);
         if (MutexConcordKKSIn == NULL)
         {
+            last_system_error = GetLastError();
             result |=2;
             return result;
         }
@@ -792,6 +837,7 @@ unsigned int GateDTS::UpdateMemoryTabConcordIn()
     MemoryConcordKKSIn = CreateFileMappingA(INVALID_HANDLE_VALUE, &security->getsecurityattrebut(), PAGE_READWRITE, 0, 4 + sizeof(KKSConcord_RAEK) * TabConcordKKSIn.size(), NameMemoryConcordKKSIn);
     if (MemoryConcordKKSIn == NULL)
     {
+        last_system_error = GetLastError();
         ReleaseMutex(MutexConcordKKSIn);
         result |= 4;
         return result;
@@ -800,6 +846,7 @@ unsigned int GateDTS::UpdateMemoryTabConcordIn()
     buf= (char*)MapViewOfFile(MemoryConcordKKSIn, FILE_MAP_ALL_ACCESS, 0, 0, 0);
     if (buf == NULL)
     {
+        last_system_error = GetLastError();
         ReleaseMutex(MutexConcordKKSIn);
         result |= 8;
         return result;
@@ -827,7 +874,7 @@ unsigned int GateDTS::UpdateMemoryTabConcordIn()
  3 - ошибка отображения памяти
 
 */
-unsigned int GateDTS::UpdateMemoryTabConcordOut()
+unsigned int Gate_EMT_DTS::UpdateMemoryTabConcordOut()
 {
     unsigned int result = 0;
     int* number;
@@ -844,6 +891,7 @@ unsigned int GateDTS::UpdateMemoryTabConcordOut()
         MutexConcordKKSOut = CreateMutexA(&security->getsecurityattrebut(), FALSE, NameMutexConcordKKSOut);
         if (MutexConcordKKSOut == NULL)
         {
+            last_system_error = GetLastError();
             result |= 2;
             return result;
         }
@@ -860,6 +908,7 @@ unsigned int GateDTS::UpdateMemoryTabConcordOut()
     MemoryConcordKKSOut = CreateFileMappingA(INVALID_HANDLE_VALUE, &security->getsecurityattrebut(), PAGE_READWRITE, 0, 4 + sizeof(KKSConcord_RAEK) * TabConcordKKSOut.size(), NameMemoryConcordKKSOut);
     if (MemoryConcordKKSOut == NULL)
     {
+        last_system_error = GetLastError();
         ReleaseMutex(MutexConcordKKSOut);
         result |= 4;
         return result;
@@ -868,6 +917,7 @@ unsigned int GateDTS::UpdateMemoryTabConcordOut()
     buf = (char*)MapViewOfFile(MemoryConcordKKSOut, FILE_MAP_ALL_ACCESS, 0, 0, 0);
     if (buf == NULL)
     {
+        last_system_error = GetLastError();
         ReleaseMutex(MutexConcordKKSOut);
         result |= 8;
         return result;
@@ -897,7 +947,7 @@ unsigned int GateDTS::UpdateMemoryTabConcordOut()
 */
 
 
-unsigned int GateDTS::WriteData(TypeData TP, void* buf, int size_buf)
+unsigned int Gate_EMT_DTS::WriteData(TypeData TP, void* buf, int size_buf)
 {
     unsigned int result = 0;
     HANDLE memory = NULL;
@@ -909,7 +959,7 @@ unsigned int GateDTS::WriteData(TypeData TP, void* buf, int size_buf)
 
     result = CheckStatusSharedMemory();
 
-    if (TabConcordKKSOut.size() == 0) { result |= (1<<21); return result; }
+    if (TabConcordKKSOut.size() == 0) { result |= (1<<22); return result; }
     int size_data_channel = 0;
 
     if (TP == TypeData::Analog) size_type = sizeof(float);
@@ -934,16 +984,16 @@ unsigned int GateDTS::WriteData(TypeData TP, void* buf, int size_buf)
             if (memory != NULL) { CloseHandle(memory); memory = NULL; }
 
             memory = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, CreateNameMemory(TP, TypeValue::OUTPUT, current_channel).c_str());
-            if (memory == NULL) { result |= 1; flag_write = 0; continue; }
+            if (memory == NULL) { result |= (1<<23); flag_write = 0; last_system_error = GetLastError(); continue; }
             buf_dts = (char*)MapViewOfFile(memory, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-            if (buf_dts == NULL) { CloseHandle(memory); memory = NULL; flag_write = 0; result |= (1<<22); continue; }
+            if (buf_dts == NULL) { CloseHandle(memory); memory = NULL; flag_write = 0; result |= (1<<24); last_system_error = GetLastError(); continue; }
             flag_write = 1;
         }
 
         if (flag_write == 1 && TabConcordKKSOut[i].type == TP)
         {
-            if (TabConcordKKSOut[i].indexraek >= size_buf) { result |= (1<<23); continue; }
-            if (TabConcordKKSOut[i].indexdts >= size_data_channel) { result |= (1<<24); continue; }
+            if (TabConcordKKSOut[i].indexraek >= size_buf) { result |= (1<<25); continue; }
+            if (TabConcordKKSOut[i].indexdts >= size_data_channel) { result |= (1<<26); continue; }
 
             for (int j = 0; j < size_type; j++)
             {
@@ -959,7 +1009,38 @@ unsigned int GateDTS::WriteData(TypeData TP, void* buf, int size_buf)
     return result;
 }
 
-unsigned int GateDTS::ReadData(TypeData TP, void* buf, int size_buf)
+// --- проверк/обновления данных --- ///
+/*
+0 - ошибка GetStatusMemory инициализации мьютекса
+1 - ошибка GetStatusMemory инициализации памяти
+2 - ошибка GetStatusMemory отображения памяти
+3 - ошибка UpdateListChannels инициализации мьютекса
+4 - ошибка UpdateListChannels открытия памяти
+5 - ошибка UpdateListChannels отображения памяти
+6 - ошибка UpdateListKKSMemIn инициализации мьютекса
+7 - ошибка UpdateListKKSMemIn открытия памяти
+8 - ошибка UpdateListKKSMemIn отображения памяти
+9 - ошибка UpdateListKKSMemOut инициализации мьютекса
+10 - ошибка UpdateListKKSMemOut открытия памяти
+11 - ошибка UpdateListKKSMemOut отображения памяти
+12 - ошибка UpdateTabConcordKKSIn вектор KKS EMT пуст
+13 - ошибка UpdateTabConcordKKSIn вектор KKS DTS пуст
+14 - ошибка UpdateTabConcordKKSOut вектор KKS EMT пуст
+15 - ошибка UpdateTabConcordKKSOut вектор KKS DTS пуст
+16 - ошибка UpdateMemoryTabConcordin инициализации мьютекса
+17 - ошибка UpdateMemoryTabConcordin инициализации памяти
+18 - ошибка UpdateMemoryTabConcordin отображения памяти
+19 - ошибка UpdateMemoryTabConcordout инициализации мьютекса
+20 - ошибка UpdateMemoryTabConcordout инициализации памяти
+21 - ошибка UpdateMemoryTabConcordout отображения памяти
+22 - таблица соглалования KKS пуста
+23 - присуствует ошибра открытия памяти
+24 - присуствует ошибка отображения
+25 - индекс выходит за границы входного буфера
+26 - индекс выходин за границы буфера общей памяти
+*/
+
+unsigned int Gate_EMT_DTS::ReadData(TypeData TP, void* buf, int size_buf)
 {
     unsigned int result = 0;
     HANDLE memory = NULL;
@@ -971,7 +1052,7 @@ unsigned int GateDTS::ReadData(TypeData TP, void* buf, int size_buf)
 
     result = CheckStatusSharedMemory();
 
-    if (TabConcordKKSIn.size() == 0) { result |= (1<<21); return result; }
+    if (TabConcordKKSIn.size() == 0) { result |= (1<<22); return result; }
     int size_data_channel = 0;
 
     if (TP == TypeData::Analog) size_type = sizeof(float);
@@ -996,22 +1077,22 @@ unsigned int GateDTS::ReadData(TypeData TP, void* buf, int size_buf)
             if (memory != NULL) { CloseHandle(memory); memory = NULL; }
             if (buf_dts != NULL) { UnmapViewOfFile(buf_dts); buf_dts = NULL; }
             memory = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, CreateNameMemory(TP, TypeValue::INPUT, current_channel).c_str());
-            if (memory == NULL) { result |= 1; flag_read = 0; continue; }
+            if (memory == NULL) { result |= (1<<23); flag_read = 0; last_system_error = GetLastError(); continue; }
             buf_dts = (char*)MapViewOfFile(memory, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-            if (buf_dts == NULL) { CloseHandle(memory); memory = NULL; flag_read = 0; result |= (1<<22); continue; }
+            if (buf_dts == NULL) { CloseHandle(memory); memory = NULL; flag_read = 0; result |= (1<<24); last_system_error = GetLastError(); continue; }
             flag_read = 1;
         }
 
         if (flag_read == 1 && TabConcordKKSIn[i].type == TP)
         {
-            if (TabConcordKKSIn[i].indexraek >= size_buf) { result |= (1<<23); continue; }
-            if (TabConcordKKSIn[i].indexdts >= size_data_channel) { result |= (1<<24); continue; }
+            if (TabConcordKKSIn[i].indexraek >= size_buf) { result |= (1<<25); continue; }
+            if (TabConcordKKSIn[i].indexdts >= size_data_channel) { result |= (1<<26); continue; }
 
             for (int j = 0; j < size_type; j++)
             {
                 *(((char*)buf) + TabConcordKKSIn[i].indexraek*size_type+j) = *(char*)(buf_dts + size_type * TabConcordKKSIn[i].indexdts+j);
             }
-            //*(((float*)buf) + TabConcordKKSIn[i].indexraek) = *(float*)(buf_dts + size_type * TabConcordKKSIn[i].indexdts);
+
         }
     }
 
@@ -1052,7 +1133,7 @@ unsigned int GateDTS::ReadData(TypeData TP, void* buf, int size_buf)
 26 - индекс выходин за границы буфера общей памяти
 */
 
-unsigned int GateDTS::CheckStatusSharedMemory()
+unsigned int Gate_EMT_DTS::CheckStatusSharedMemory()
 {
     unsigned int result = 0;
     unsigned res = 0;
@@ -1083,21 +1164,21 @@ unsigned int GateDTS::CheckStatusSharedMemory()
             res = UpdateListKKSInMem();
             if (res != 0)
             {
-                result |= (res << 3); // 3 бита
+                result |= (res << 6); // 3 бита
                 continue;
             }
 
             res = UpdateTabConcordKKSIn();
             if (res != 0)
             {
-                result |= (res << 6); //  2 бита
+                result |= (res << 9); //  2 бита
                 continue;
             }
 
-            res = UpdateMemoryTabConcordIn();
+            res = UpdateMemoryTabConcordIn(); //4бит
             if (res != 0)
             {
-                result |= (res << 8);
+                result |= (res << 11); //
                 continue;
             }
             continue;
@@ -1108,22 +1189,22 @@ unsigned int GateDTS::CheckStatusSharedMemory()
             res = UpdateListKKSOutMem();
             if (res != 0)
             {
-                result |= (res << 12);
+                result |= (res << 15); //3бит
                 continue;
             }
 
-            UpdateTabConcordKKSOut();
+            UpdateTabConcordKKSOut(); //2бит
             if (res != 0)
             {
-                result |= (res << 15);
+                result |= (res << 18);
                 continue;
             }
 
-            UpdateMemoryTabConcordOut();
+            UpdateMemoryTabConcordOut();  //2бит
             if (res != 0)
             {
                 
-                result |= (res << 17);
+                result |= (res << 20);
                 continue;
             }
             continue;
@@ -1133,4 +1214,19 @@ unsigned int GateDTS::CheckStatusSharedMemory()
     }
 
     return result;
+}
+
+int Gate_EMT_DTS::GetError()
+{
+    return result_init;
+}
+
+DWORD Gate_EMT_DTS::GetSystemError()
+{
+    return last_system_error;
+}
+
+Status_Init Gate_EMT_DTS::GetStatusInit()
+{
+    return status_init;
 }

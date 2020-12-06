@@ -96,6 +96,11 @@ enum class CommandEmt
 	UpdateListChannel = 4
 };
 
+enum class Status_Init
+{
+	OK = 0,
+	Error = 1
+};
 
 
 std::string CreateNameMutexMemory(TypeData TD, TypeValue TV, int channel);
@@ -122,7 +127,7 @@ public:
 	SECURITY_ATTRIBUTES& getsecurityattrebut();
 };
 
-class GateDTS
+class Gate_EMT_DTS
 {
 
 	SecurityHandle* security;
@@ -176,18 +181,28 @@ class GateDTS
 	int num_channels = 0;
 	char* buf_status = NULL;
 
+	unsigned int ReadListKKSOut();
+	unsigned int ReadListKKSIn();
+
 	char flag_first_init = 0b00000111;
+
+	int result_init = 0;
+	DWORD last_system_error = 0;
+	Status_Init status_init = Status_Init::Error;
 
 	unsigned int CheckStatusSharedMemory();
 
 public:
-	GateDTS();
 
-	unsigned int ReadListKKSOut();
-	unsigned int ReadListKKSIn();
-	
+	Gate_EMT_DTS();
+
 	unsigned int ReadData(TypeData TP, void* buf, int size_buf);
 	unsigned int WriteData(TypeData TP, void* buf, int size_buf);
+
+	DWORD GetSystemError();
+	int GetError();
+	
+	Status_Init GetStatusInit();
 
 	//unsigned int ReadAnalogData(void* buf, int size_buf);
 	//unsigned int ReadDiscreteData(void* buf, int size_buf);
