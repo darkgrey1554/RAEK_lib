@@ -192,6 +192,7 @@ class Gate_EMT_DTS
 
 	unsigned int CheckStatusSharedMemory();
 
+
 public:
 
 	Gate_EMT_DTS();
