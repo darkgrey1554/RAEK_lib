@@ -4,6 +4,8 @@
 #define numerror_ReadListKKSIn 4
 #define numerror_ReadListKKSOut 4
 
+#define PATH_DIR "Global\\CURRENTDIRGATESERVER"
+
 std::string CreateNameMutexMemory(TypeData TD, TypeValue TV, int channel)
 {
     std::string str;
@@ -143,6 +145,22 @@ SECURITY_ATTRIBUTES& SecurityHandle::getsecurityattrebut()
 Gate_EMT_DTS::Gate_EMT_DTS()
 {
     int result = 0;
+    HANDLE handel_path_KKS = NULL;
+    char* buf_path = NULL;
+    dir_kks_list.clear();
+    handel_path_KKS = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, PATH_DIR);
+
+    if (handel_path_KKS != NULL)
+    {
+        buf_path = (char*)MapViewOfFile(handel_path_KKS, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+        if (buf_path != NULL)
+        {
+            for (int i = 0; i < *(int*)(buf_path); i++)
+            {
+                dir_kks_list += *(buf_path + 4 + i);
+            }
+        }
+    }
 
     security = new SecurityHandle();
     result = security->InitSecurityAttrubuts();
@@ -156,7 +174,7 @@ Gate_EMT_DTS::Gate_EMT_DTS()
     result = ReadListKKSOut();
     if (result != 0)
     {
-        result_init = (result << numerror_InitSecurityAttrubuts);
+        result_init |= (result << numerror_InitSecurityAttrubuts);
         //last_system_error = 0;
         return;
     }
@@ -164,7 +182,7 @@ Gate_EMT_DTS::Gate_EMT_DTS()
     result = ReadListKKSIn();
     if (result != 0)
     {
-        result_init = (result << (numerror_InitSecurityAttrubuts+numerror_ReadListKKSOut));
+        result_init |= (result << (numerror_InitSecurityAttrubuts+numerror_ReadListKKSOut));
         //last_system_error = 0;
         return;
     }
@@ -183,6 +201,7 @@ Gate_EMT_DTS::Gate_EMT_DTS()
 */
 unsigned int Gate_EMT_DTS::ReadListKKSIn()
 {
+    std::string file_name;
     FILE* config_file = NULL;
     char simvol = 0;
     std::string str_info;
@@ -197,7 +216,15 @@ unsigned int Gate_EMT_DTS::ReadListKKSIn()
     KKS_RAEK KKS;
     char flag_err_type = 0;
 
-    config_file = fopen(NameFileListKKSIn, "r");
+    file_name.clear();
+    if (!dir_kks_list.empty())
+    {
+        file_name += dir_kks_list;
+        file_name += "\\EMT\\";
+    }
+    file_name += NameFileListKKSIn;
+
+    config_file = fopen(file_name.c_str(), "r");
     if (config_file == NULL)
     {
         result |= 1;
@@ -302,12 +329,21 @@ unsigned int Gate_EMT_DTS::ReadListKKSOut()
     int count = 0;
     char status = 0;
     unsigned int result = 0;
+    std::string file_name;
     auto iter = VectKKSOut.begin();
 
     KKS_RAEK KKS;
     char flag_err_type = 0;
 
-    config_file = fopen(NameFileListKKSOut, "r");
+    file_name.clear();
+    if (!dir_kks_list.empty())
+    {
+        file_name += dir_kks_list;
+        file_name += "\\EMT\\";
+    }
+    file_name += NameFileListKKSOut;
+
+    config_file = fopen(file_name.c_str(), "r");
     if (config_file == NULL)
     {
         result |= 1;

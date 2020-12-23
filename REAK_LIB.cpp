@@ -39,8 +39,8 @@ int main(int num, char* arg[])
     if (dts_gate->GetStatusInit() != Status_Init::OK)
     {
         std::cout << "ERROR INITIAL GATE" << std::endl;
-        std::cout << "error - "<< dts_gate->GerLastError() << std::endl;
-        std::cout << "error_system - " << dts_gate->GetLastSystemError() << std::endl;
+        std::cout << "error - "<< dts_gate->GetError() << std::endl;
+        std::cout << "error_system - " << dts_gate->GetSystemError() << std::endl;
         Sleep(2000);
         return -1;
     }

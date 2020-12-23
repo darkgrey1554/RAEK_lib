@@ -11,8 +11,6 @@
 #pragma comment(lib,"ws2_32.lib")
 #pragma warning(disable:4996)
 
-
-
 #define NameFileListKKSOut "List_KKS_Out.txt"
 #define NameFileListKKSIn "List_KKS_In.txt"
 
@@ -192,6 +190,7 @@ class Gate_EMT_DTS
 
 	unsigned int CheckStatusSharedMemory();
 
+	std::string dir_kks_list;
 
 public:
 
