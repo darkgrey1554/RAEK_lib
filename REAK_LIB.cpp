@@ -25,7 +25,7 @@ int main(int num, char* arg[])
         return 0;
     }
 
-    if (0 > atoi(arg[2]) || atoi(arg[2]) > 1000)
+    if (0 > atoi(arg[2]) || atoi(arg[2]) > 99000)
     {
         std::cout << "BAD PARAMETRS" << std::endl;
         return 0;
@@ -64,7 +64,7 @@ int main(int num, char* arg[])
     float time = 0;
     QueryPerformanceFrequency(&f);
 
-    Sleep(4000);
+    Sleep(1000);
     
 
     for (;;)
@@ -93,15 +93,41 @@ int main(int num, char* arg[])
         res=dts_gate->WriteData(TypeData::Discrete, bufD, num_channels * size_data);
         res=dts_gate->WriteData(TypeData::Binar, bufB, num_channels * size_data);
 
-        res=dts_gate->ReadData(TypeData::Analog, buf_Ain, num_channels * size_data);
-        res=dts_gate->ReadData(TypeData::Discrete, buf_Din, num_channels * size_data);
-        res=dts_gate->ReadData(TypeData::Binar, buf_Bin, num_channels * size_data);
-      
-        
         system("cls");
+
+        res=dts_gate->ReadData(TypeData::Analog, buf_Ain, num_channels * size_data);
+        if (res != 0)
+        {
+            std::cout << "WARNING ReadData: " << res << std::endl;
+        }
+        res=dts_gate->ReadData(TypeData::Discrete, buf_Din, num_channels * size_data);
+        if (res != 0)
+        {
+            std::cout << "WARNING ReadData: " << res << std::endl;
+        }
+        res=dts_gate->ReadData(TypeData::Binar, buf_Bin, num_channels * size_data);
+        if (res != 0)
+        {
+            std::cout << "WARNING ReadData: " << res << std::endl;
+        }
+        
+        
         std::cout << "ANALOG:\tDISCRETE:\tBINAR:" <<std::endl;
 
-        for (int j = 0; j < 3; j++)
+        for (int j = 0; j < 1; j++)
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                std::cout << bufA[size_data * j + i] << "\t" << bufD[size_data * j + i] << "\t" << (int)bufB[size_data * j + i] << std::endl;
+            }
+            for (int i = 2; i > 0; i--)
+            {
+                std::cout << bufA[size_data * j + size_data - 1 - i] << "\t" << bufD[size_data * j + size_data - 1 - i] << "\t" << (int)bufB[size_data * j + size_data - 1 - i] << std::endl;
+            }
+            std::cout << " -------------------- " << std::endl;
+        }
+
+        for (int j = 0; j < 1; j++)
         {
             for (int i = 0; i < 2; i++)
             {

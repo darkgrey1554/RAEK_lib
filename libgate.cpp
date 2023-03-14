@@ -1,3 +1,5 @@
+
+#include <iostream>
 #include "libgate.h"
 
 #define numerror_InitSecurityAttrubuts 5
@@ -241,10 +243,12 @@ unsigned int Gate_EMT_DTS::ReadListKKSIn()
             if ((simvol > 0x1F || simvol == '\t') && res_read != EOF) str_info += simvol;
         }
 
-        if (res_read == EOF && str_info.size() == 0)
+        if (res_read == EOF && str_info.empty())
         {
             break;
         }
+
+        if (str_info.empty()) continue;
 
         pos[0] = str_info.find('\t', 0);
         if (pos[0] != 10) { result |= 2; continue; }
@@ -360,10 +364,12 @@ unsigned int Gate_EMT_DTS::ReadListKKSOut()
             if ((simvol > 0x1F || simvol == '\t') && res_read != EOF) str_info += simvol;
         }
 
-        if (res_read == EOF && str_info.size() == 0)
+        if (res_read == EOF && str_info.empty())
         {
             break;
         }
+
+        if (str_info.empty()) continue;
 
         pos[0] = str_info.find('\t', 0);
         if (pos[0] != 10) { result |= 2; continue; }
@@ -478,8 +484,8 @@ int Gate_EMT_DTS::GetStatusMemory()
 
     WaitForSingleObject(MutexSharMemStatus, INFINITE);
 
-    num_KKSIn = *(int*)(buf_status + 2);
-    num_KKSOut = *(int*)(buf_status + 6);
+    num_KKSIn = *(int*)(buf_status + 6);
+    num_KKSOut = *(int*)(buf_status + 2);
     num_channels = *(int*)(buf_status + 10);
 
     status = *(buf_status + 1);
@@ -995,6 +1001,8 @@ unsigned int Gate_EMT_DTS::WriteData(TypeData TP, void* buf, int size_buf)
 
     result = CheckStatusSharedMemory();
 
+    if (result != 0) return result;
+
     if (TabConcordKKSOut.size() == 0) { result |= (1<<22); return result; }
     int size_data_channel = 0;
 
@@ -1087,6 +1095,8 @@ unsigned int Gate_EMT_DTS::ReadData(TypeData TP, void* buf, int size_buf)
     int size_type = 0;
 
     result = CheckStatusSharedMemory();
+
+    if (result != 0) return result;
 
     if (TabConcordKKSIn.size() == 0) { result |= (1<<22); return result; }
     int size_data_channel = 0;
@@ -1217,7 +1227,6 @@ unsigned int Gate_EMT_DTS::CheckStatusSharedMemory()
                 result |= (res << 11); //
                 continue;
             }
-            continue;
         }
 
         if (status == (int)CommandEmt::UpdateKKSListOut)
@@ -1243,7 +1252,6 @@ unsigned int Gate_EMT_DTS::CheckStatusSharedMemory()
                 result |= (res << 20);
                 continue;
             }
-            continue;
         }
 
         break;

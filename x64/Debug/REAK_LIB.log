@@ -1,6 +1,12 @@
-﻿  REAK_LIB.cpp
-D:\Program Files (x86)\project\REAK_LIB\REAK_LIB.cpp(13,45): warning C4244: =: преобразование "int" в "float", возможна потеря данных
-D:\Program Files (x86)\project\REAK_LIB\REAK_LIB.cpp(18,21): warning C4305: инициализация: усечение из "double" в "float"
-D:\Program Files (x86)\project\REAK_LIB\REAK_LIB.cpp(25,19): warning C4101: t2: неиспользованная локальная переменная
-D:\Program Files (x86)\project\REAK_LIB\REAK_LIB.cpp(24,19): warning C4101: t1: неиспользованная локальная переменная
-  REAK_LIB.vcxproj -> D:\Program Files (x86)\project\REAK_LIB\x64\Debug\REAK_LIB.exe
+﻿  libgate.cpp
+D:\CATE_WORK\GATE_EMT_DTS\projects\REAK_LIB\libgate.cpp(253,40): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+D:\CATE_WORK\GATE_EMT_DTS\projects\REAK_LIB\libgate.cpp(261,49): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+D:\CATE_WORK\GATE_EMT_DTS\projects\REAK_LIB\libgate.cpp(374,40): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+D:\CATE_WORK\GATE_EMT_DTS\projects\REAK_LIB\libgate.cpp(382,49): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+D:\CATE_WORK\GATE_EMT_DTS\projects\REAK_LIB\libgate.cpp(879,196): warning C4267: аргумент: преобразование из "size_t" в "DWORD"; возможна потеря данных
+D:\CATE_WORK\GATE_EMT_DTS\projects\REAK_LIB\libgate.cpp(897,40): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+D:\CATE_WORK\GATE_EMT_DTS\projects\REAK_LIB\libgate.cpp(851,10): warning C4101: number: неиспользованная локальная переменная
+D:\CATE_WORK\GATE_EMT_DTS\projects\REAK_LIB\libgate.cpp(950,199): warning C4267: аргумент: преобразование из "size_t" в "DWORD"; возможна потеря данных
+D:\CATE_WORK\GATE_EMT_DTS\projects\REAK_LIB\libgate.cpp(968,41): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+D:\CATE_WORK\GATE_EMT_DTS\projects\REAK_LIB\libgate.cpp(922,10): warning C4101: number: неиспользованная локальная переменная
+  REAK_LIB.vcxproj -> D:\CATE_WORK\GATE_EMT_DTS\projects\REAK_LIB\x64\Debug\SimulatorEMT.exe
